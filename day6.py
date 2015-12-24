@@ -16,7 +16,7 @@ def turn_on(grid, start, end):
     """returns grid with lights turned on from start tuple (x1, y1) to end tuple (x2, y2)"""
     start_x, start_y = start
     end_x, end_y = end
-    grid[start_x:end_x, start_y:end_y] = True
+    grid[start_x:end_x+1, start_y:end_y+1] = True
     return grid
 
 
@@ -24,12 +24,12 @@ def turn_off(grid, start, end):
     """returns grid with lights turned off from start tuple (x1, y1) to end tuple (x2, y2)"""
     start_x, start_y = start
     end_x, end_y = end
-    grid[start_x:end_x, start_y:end_y] = False
+    grid[start_x:end_x+1, start_y:end_y+1] = False
     return grid
 
 
 def toggle(grid, start, end):
     start_x, start_y = start
     end_x, end_y = end
-    grid[start_x:end_x, start_y:end_y] = np.invert(grid[start_x:end_x, start_y:end_y])
+    grid[start_x:end_x+1, start_y:end_y+1] = np.invert(grid[start_x:end_x+1, start_y:end_y+1])
     return grid
