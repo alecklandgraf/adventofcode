@@ -2,6 +2,13 @@
 import numpy as np
 
 
+def read_data():
+    with open('day6.txt', 'r') as f:
+        data = f.readlines()
+        data = [line.strip() for line in data]
+        return data
+
+
 def generate_grid():
     """generates a fresh light grid with all the lights off"""
     return np.zeros((1000, 1000), dtype=np.bool)

@@ -69,7 +69,8 @@
 
 (defn update-position
   "updates the position of x and y based on charater from input c,
-  returns new position as vector [new-x new-y]"
+  returns new position as vector [new-x new-y]
+  e.g. [1 5] and > will return [2 5] while [1 5] and v will return [1 4]"
   [[x y] c]
   (let [c (str c)]
     (case c
