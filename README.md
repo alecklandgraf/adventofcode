@@ -1,14 +1,10 @@
 # advent
 
-A Clojure library designed to ... well, that part is up to you.
+My, Aleck Landgraf and friends, solutions to some of the Advent of Code 2015's quests.
+http://adventofcode.com
 
-## Usage
-
-FIXME
+### See `src/advent/core.clj` for day 3 and day 4 solutions in Clojure
 
 ## License
 
-Copyright © 2015 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+MIT, see LICENSE
