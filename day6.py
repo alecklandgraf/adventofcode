@@ -14,9 +14,13 @@ def read_data(input_file='day6.txt'):
     return data
 
 
-def generate_grid():
+def generate_grid(grid_type='bool'):
     """generates a fresh light grid with all the lights off"""
-    return np.zeros((1000, 1000), dtype=np.bool)
+    if grid_type == 'bool':
+        grid = np.zeros((1000, 1000), dtype=np.bool)
+    elif grid_type == 'int':
+        grid = np.zeros((1000, 1000), dtype=np.int)
+    return grid
 
 
 def count_lights(grid):
@@ -99,5 +103,48 @@ def part1():
 
     number_of_lights = count_lights(grid)
     print ('Day 6 Part 1 answer: {}'.format(number_of_lights))
+
+    return number_of_lights
+
+
+
+def turn_on_2(grid, start, end):
+    """returns grid with lights turned on from start tuple (x1, y1) to end tuple (x2, y2)"""
+    start_x, start_y = start
+    end_x, end_y = end
+    grid[start_x:end_x + 1, start_y:end_y + 1] += 1
+    return grid
+
+
+def turn_off_2(grid, start, end):
+    """returns grid with lights turned off from start tuple (x1, y1) to end tuple (x2, y2)"""
+    start_x, start_y = start
+    end_x, end_y = end
+    grid[start_x:end_x + 1, start_y:end_y + 1] -= 1
+    grid[grid < 0] = 0
+    return grid
+
+
+def toggle_2(grid, start, end):
+    """returns a grid of the with the cells toggled from start tuple (x1, y1) to end tuple (x2, y2)"""
+    grid = turn_on_2(grid, start, end)
+    grid = turn_on_2(grid, start, end)
+    return grid
+
+
+def part2():
+    op_map = {
+        'toggle': toggle_2,
+        'turn on': turn_on_2,
+        'turn off': turn_off_2,
+    }
+    data = read_data()
+    grid = generate_grid('int')
+    for line in data:
+        pl = parse_line(line)
+        grid = op_map[pl.op](grid, pl.start, pl.end)
+
+    number_of_lights = count_lights(grid)
+    print ('Day 6 Part 2 answer: {}'.format(number_of_lights))
 
     return number_of_lights
