@@ -1,6 +1,6 @@
 # advent
 
-My, Aleck Landgraf and friends, solutions to some of the Advent of Code 2015's quests.
+My (and friends) solutions to some of the Advent of Code 2015's quests.  
 http://adventofcode.com
 
 ### Solutions
