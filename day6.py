@@ -6,9 +6,9 @@ from collections import namedtuple
 ParsedLine = namedtuple('ParsedLine', ['op', 'start', 'end'])
 
 
-def read_data():
-    """reads and loads the contents of day6.txt, returns a list of the contents"""
-    with open('day6.txt', 'r') as f:
+def read_data(input_file='day6.txt'):
+    """reads and loads the contents of input_file, returns a list of the contents"""
+    with open(input_file, 'r') as f:
         data = f.readlines()
     data = [line.strip() for line in data]
     return data
@@ -57,6 +57,13 @@ def parse_line(line):
     Usage:
         >>> parse_line("turn on 68,419 through 86,426")
         ParsedLine(op='turn on', start=(68, 419), end=(86, 426))
+        >>> pl = parse_line("turn on 68,419 through 86,426")
+        >>> pl.op
+        turn on
+        >>> pl.start
+        (68, 419)
+        >>> pl[1]
+        (68, 419)
 
     returns: namedtuple(op='toggle|turn on|turn off', start=start_tuple, end=end_tuple)
     """
@@ -68,6 +75,29 @@ def parse_line(line):
     if 'turn off' in line:
         op = 'turn off'
 
-    parsed_line = ParsedLine(op, (0,0), (0,0))
+    # transform "turn on 68,419 through 86,426" into ['68,419', 'through', '86,426']
+    coords = ''.join(line.split(op)).strip().split()
 
-    return parsed_line
+    start = tuple(int(c) for c in coords[0].split(','))
+    end = tuple(int(c) for c in coords[2].split(','))
+
+    return ParsedLine(op, start, end)
+
+
+def part1():
+    """returns Day 6 Part 1 answer"""
+    op_map = {
+        'toggle': toggle,
+        'turn on': turn_on,
+        'turn off': turn_off,
+    }
+    data = read_data()
+    grid = generate_grid()
+    for line in data:
+        pl = parse_line(line)
+        grid = op_map[pl.op](grid, pl.start, pl.end)
+
+    number_of_lights = count_lights(grid)
+    print ('Day 6 Part 1 answer: {}'.format(number_of_lights))
+
+    return number_of_lights
