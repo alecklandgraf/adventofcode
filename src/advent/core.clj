@@ -29,7 +29,7 @@
                 x
                 (recur (inc x))))))
 
-; advent #21
+; advent #21 (unfinshed and not working)
 (def boss {:hit-points 100 :damage 8 :armor 2})
 
 (def weapon-store {[4 0] 8
@@ -164,3 +164,37 @@
         robos-houses (process-directions-robo robos-directions)
         houses-seen (union santas-houses robos-houses)]
     (count houses-seen)))
+
+
+; day 7
+; we need to define a local bit-not, since (bit-not 123) returns -124 and not 65412 as
+; needed for the problem
+(require '[clojure.string :as str])
+(def day-7-input "/Users/alandgraf/code/advent/day7.txt")
+
+(defn bit-not-unsigned
+  "An unsigned 16-bit Integer bitwise not"
+  [n]
+  (- 65535 n))
+
+
+
+
+(defn parse-output-wire [s]
+  (last (map str/trim (str/split s #"->"))))
+
+(defn parse-input-wires [s]
+  (first (map str/trim (str/split s #"->"))))
+
+(defn build-circuit
+  "returns map of circuit"
+  [circuit-input]
+  (reduce
+    (fn [acc next-circuit]
+      (let [output-wire (keyword (parse-output-wire next-circuit))
+            input-wires-str (parse-input-wires next-circuit)
+            input-wires (str/split input-wires-str #" ")]
+        (assoc acc output-wire input-wires)))
+    {}
+    circuit-input)
+  )
