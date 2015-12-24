@@ -133,6 +133,7 @@ def toggle_2(grid, start, end):
 
 
 def part2():
+    """returns Day 6 Part 2 answer"""
     op_map = {
         'toggle': toggle_2,
         'turn on': turn_on_2,
