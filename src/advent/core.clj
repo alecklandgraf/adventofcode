@@ -171,6 +171,7 @@
 ; needed for the problem
 (require '[clojure.string :as str])
 (def day-7-input "/Users/alandgraf/code/advent/day7.txt")
+(def day-7-sample "/Users/alandgraf/code/advent/day7-sample-data.txt")
 
 (defn bit-not-unsigned
   "An unsigned 16-bit Integer bitwise not"
@@ -187,7 +188,7 @@
   (first (map str/trim (str/split s #"->"))))
 
 (defn build-circuit
-  "returns map of circuit"
+  "returns map of circuit, usage (build-circuit (str/split (slurp day-7-sample) #"\n"))"
   [circuit-input]
   (reduce
     (fn [acc next-circuit]
@@ -198,3 +199,4 @@
     {}
     circuit-input)
   )
+
