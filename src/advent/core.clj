@@ -187,8 +187,21 @@
 (defn parse-input-wires [s]
   (first (map str/trim (str/split s #"->"))))
 
-(defn build-circuit
-  "returns map of circuit, usage (build-circuit (str/split (slurp day-7-sample) #"\n"))"
+(defn single-values-to-keywords
+  "Assumes value is an array, if only one elemenet it returns that element as a keyword, else returns the
+  value"
+  [value]
+  (if (> (count value) 1)
+    value
+    (keyword (first value))))
+
+(defn map-values
+  "returns a map of the map (m) with the values mapped over the function (f)"
+  [m f]
+  (into {} (for [[k v] m] [k (f v)])))
+
+(defn parse-circuit-data-into-map
+  "returns map of circuit, usage (parse-circuit-data-into-map (str/split (slurp day-7-sample) #\"\\n\"))"
   [circuit-input]
   (reduce
     (fn [acc next-circuit]
@@ -200,3 +213,17 @@
     circuit-input)
   )
 
+(defn build-circuit
+  "returns a map of input's data
+  Usage: (build-circuit \"day-7-data.txt\")"
+  [circuit-input]
+  (map-values (parse-circuit-data-into-map (str/split (slurp circuit-input) #"\n")) single-values-to-keywords))
+
+
+(defn find-signal
+  "returns the value of signal (keyword) within a circuit (map)"
+  [signal circuit]
+  (if (keyword? (signal circuit))
+    (signal circuit)
+    (println "more work to do"))
+  )
