@@ -232,6 +232,6 @@
     (case (count (signal circuit))
       2 ((let [value (parse-int (last (signal circuit)))]
            (if (number? value)
-             (println "is a number")
-             (println "is not a number") )))
+             (bit-not-unsigned value)
+             value )))
       3 (println "got three here"))))
