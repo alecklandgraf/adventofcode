@@ -236,6 +236,7 @@
       2 (let [value (parse-int-if-possible (last (signal circuit)))]
            (if (number? value)
              (bit-not-unsigned value)
-             (bit-not-unsigned (find-signal (keyword value) circuit))
-            ))
+             (bit-not-unsigned (find-signal (keyword value) circuit))))
       3 (println "got three here"))))
+
+(def fast-find-signal (memoize find-signal))
