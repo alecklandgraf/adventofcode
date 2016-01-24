@@ -179,6 +179,14 @@
   [n]
   (- 65535 n))
 
+(defn parse-int-if-possible
+  "returns the integer of i if possible, otherwise returns i"
+  [i]
+  (try
+    (Integer. i)
+    (catch Exception e
+      i)))
+
 (defn parse-output-wire [s]
   (last (map str/trim (str/split s #"->"))))
 
@@ -191,7 +199,7 @@
   [value]
   (if (> (count value) 1)
     value
-    (Integer. (first value))))
+    (parse-int-if-possible (first value))))
 
 (defn map-values
   "returns a map of the map (m) with the values mapped over the function (f)"
@@ -219,73 +227,40 @@
   [circuit-input]
   (map-values (parse-circuit-data-into-map (str/split (slurp circuit-input) #"\n")) single-values-to-keywords))
 
-(defn parse-int-if-possible
-  "returns the integer of i if possible, otherwise returns i"
-  [i]
-  (try
-    (Integer. i)
-    (catch Exception e
-      i)))
 
-;"returns the value of signal (keyword) within a circuit (map)
-;Usage: (find-signal :i sample-built-circuit)"
-(def find-signal
+(def ^{:doc "returns the value of signal (keyword) within a circuit (map)\n  Usage: (find-signal :i sample-built-circuit)"}
+  find-signal
   (memoize (fn
              [signal circuit]
-
              (if (integer? (signal circuit))
                (signal circuit)
-               (case (count (signal circuit))
-                 2 (let [value (parse-int-if-possible (last (signal circuit)))]
-                     (if (number? value)
-                       (bit-not-unsigned value)
-                       (bit-not-unsigned (find-signal (keyword value) circuit))))
+               (if (string? (signal circuit))  ; either a string, "lx", or array, ["x" "LSHIFT" "y"] or ["NOT" "x"]
+                 (find-signal (keyword (signal circuit)) circuit)
+                 (case (count (signal circuit))
+                   ; handle NOT
+                   2 (let [value (parse-int-if-possible (last (signal circuit)))]
+                       (if (number? value)
+                         (bit-not-unsigned value)
+                         (bit-not-unsigned (find-signal (keyword value) circuit))))
+                   ; handle LSHIFT RSHIFT AND OR
+                   3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
+                           left-val-parsed (parse-int-if-possible left-val-raw)
+                           right-val-parsed (parse-int-if-possible right-val-raw)
+                           left-val (if (number? left-val-parsed)
+                                      left-val-parsed
+                                      (find-signal (keyword left-val-parsed) circuit))
+                           right-val (if (number? right-val-parsed)
+                                       right-val-parsed
+                                       (find-signal (keyword right-val-parsed) circuit))]
+                       (case opcode
+                         "LSHIFT" (bit-shift-left left-val right-val)
+                         "RSHIFT" (bit-shift-right left-val right-val)
+                         "AND" (bit-and left-val right-val)
+                         "OR" (bit-or left-val right-val))
+                       )))))))
 
-                 3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
-                         left-val-parsed (parse-int-if-possible left-val-raw)
-                         right-val-parsed (parse-int-if-possible right-val-raw)
-                         left-val (if (number? left-val-parsed)
-                                    left-val-parsed
-                                    (find-signal (keyword left-val-parsed) circuit))
-                         right-val (if (number? right-val-parsed)
-                                     right-val-parsed
-                                     (find-signal (keyword right-val-parsed) circuit))]
-                     (case opcode
-                       "LSHIFT" (bit-shift-left left-val right-val)
-                       "RSHIFT" (bit-shift-right left-val right-val)
-                       "AND" (bit-and left-val right-val)
-                       "OR" (bit-or left-val right-val))
-                     ))))))
+; Timing: the memozied version copletes in 0.055178 msecs, the non-memoized version never completed
+; as it probably went into swap
 
-(defn find-signal-slowly
-  "returns the value of signal (keyword) within a circuit (map)
-  Usage: (find-signal :i sample-built-circuit)"
-  [signal circuit]
-  (if (integer? (signal circuit))
-    (signal circuit)
-    (case (count (signal circuit))
-      2 (let [value (parse-int-if-possible (last (signal circuit)))]
-          (if (number? value)
-            (bit-not-unsigned value)
-            (bit-not-unsigned (find-signal-slowly (keyword value) circuit))))
-
-      3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
-              left-val-parsed (parse-int-if-possible left-val-raw)
-              right-val-parsed (parse-int-if-possible right-val-raw)
-              left-val (if (number? left-val-parsed)
-                         left-val-parsed
-                         (find-signal-slowly (keyword left-val-parsed) circuit))
-              right-val (if (number? right-val-parsed)
-                          right-val-parsed
-                          (find-signal-slowly (keyword right-val-parsed) circuit))]
-          (case opcode
-            "LSHIFT" (bit-shift-left left-val right-val)
-            "RSHIFT" (bit-shift-right left-val right-val)
-            "AND" (bit-and left-val right-val)
-            "OR" (bit-or left-val right-val))
-          ))))
-
-; Data prep: had to manually set lx in the data since it's the only one where lx isn't a number,
-; I was able to just update the line to: lw OR lv -> a
-
-; Timing: the memozied version copletes in 0.055178 msecs, the non-memoized version in ...
+; Data was loaded via: (def day-7-data (build-circuit day-7-input))
+; For the solution to part B, I just ran (find-signal :a (assoc day-7-data :b (find-signal :a day-7-data)))
