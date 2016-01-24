@@ -227,6 +227,11 @@
   [circuit-input]
   (map-values (parse-circuit-data-into-map (str/split (slurp circuit-input) #"\n")) single-values-to-keywords))
 
+(defn handle-not [value-raw circuit callable]
+  (let [value (parse-int-if-possible value-raw)]
+    (if (number? value)
+      (bit-not-unsigned value)
+      (bit-not-unsigned (callable (keyword value) circuit)))))
 
 (def ^{:doc "returns the value of signal (keyword) within a circuit (map)\n  Usage: (find-signal :i sample-built-circuit)"}
   find-signal
@@ -238,10 +243,7 @@
                  (find-signal (keyword (signal circuit)) circuit)
                  (case (count (signal circuit))
                    ; handle NOT
-                   2 (let [value (parse-int-if-possible (last (signal circuit)))]
-                       (if (number? value)
-                         (bit-not-unsigned value)
-                         (bit-not-unsigned (find-signal (keyword value) circuit))))
+                   2 (handle-not (last (signal circuit)) circuit find-signal)
                    ; handle LSHIFT RSHIFT AND OR
                    3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
                            left-val-parsed (parse-int-if-possible left-val-raw)
