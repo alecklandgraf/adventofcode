@@ -218,10 +218,13 @@
   [circuit-input]
   (map-values (parse-circuit-data-into-map (str/split (slurp circuit-input) #"\n")) single-values-to-keywords))
 
-(defn parse-int [i]
+(defn parse-int-if-possible
+  "returns the integer of i if possible, otherwise returns i"
+  [i]
   (try
     (Integer. i)
-    (catch Exception e i)))
+    (catch Exception e
+      i)))
 
 (defn find-signal
   "returns the value of signal (keyword) within a circuit (map)
@@ -230,9 +233,9 @@
   (if (integer? (signal circuit))
     (signal circuit)
     (case (count (signal circuit))
-      2 ((let [value (parse-int (last (signal circuit)))]
+      2 (let [value (parse-int-if-possible (last (signal circuit)))]
            (if (number? value)
              (bit-not-unsigned value)
-             value
-            )))
+             (bit-not-unsigned (find-signal (keyword value) circuit))
+            ))
       3 (println "got three here"))))
