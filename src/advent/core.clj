@@ -233,6 +233,26 @@
       (bit-not-unsigned value)
       (bit-not-unsigned (callable (keyword value) circuit)))))
 
+(defn handle-ops [signal circuit callable]
+  (case (count (signal circuit))
+    2 (handle-not (last (signal circuit)) circuit callable)
+    ; handle LSHIFT RSHIFT AND OR
+    3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
+            left-val-parsed (parse-int-if-possible left-val-raw)
+            right-val-parsed (parse-int-if-possible right-val-raw)
+            left-val (if (number? left-val-parsed)
+                       left-val-parsed
+                       (callable (keyword left-val-parsed) circuit))
+            right-val (if (number? right-val-parsed)
+                        right-val-parsed
+                        (callable (keyword right-val-parsed) circuit))]
+        (case opcode
+          "LSHIFT" (bit-shift-left left-val right-val)
+          "RSHIFT" (bit-shift-right left-val right-val)
+          "AND" (bit-and left-val right-val)
+          "OR" (bit-or left-val right-val))
+        )))
+
 (def ^{:doc "returns the value of signal (keyword) within a circuit (map)\n  Usage: (find-signal :i sample-built-circuit)"}
   find-signal
   (memoize (fn
@@ -241,25 +261,7 @@
                (signal circuit)
                (if (string? (signal circuit))  ; either a string, "lx", or array, ["x" "LSHIFT" "y"] or ["NOT" "x"]
                  (find-signal (keyword (signal circuit)) circuit)
-                 (case (count (signal circuit))
-                   ; handle NOT
-                   2 (handle-not (last (signal circuit)) circuit find-signal)
-                   ; handle LSHIFT RSHIFT AND OR
-                   3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
-                           left-val-parsed (parse-int-if-possible left-val-raw)
-                           right-val-parsed (parse-int-if-possible right-val-raw)
-                           left-val (if (number? left-val-parsed)
-                                      left-val-parsed
-                                      (find-signal (keyword left-val-parsed) circuit))
-                           right-val (if (number? right-val-parsed)
-                                       right-val-parsed
-                                       (find-signal (keyword right-val-parsed) circuit))]
-                       (case opcode
-                         "LSHIFT" (bit-shift-left left-val right-val)
-                         "RSHIFT" (bit-shift-right left-val right-val)
-                         "AND" (bit-and left-val right-val)
-                         "OR" (bit-or left-val right-val))
-                       )))))))
+                 (handle-ops signal circuit find-signal))))))
 
 ; Timing: the memozied version copletes in 0.055178 msecs, the non-memoized version never completed
 ; as it probably went into swap
