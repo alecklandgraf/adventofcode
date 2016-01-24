@@ -237,6 +237,21 @@
            (if (number? value)
              (bit-not-unsigned value)
              (bit-not-unsigned (find-signal (keyword value) circuit))))
-      3 (println "got three here"))))
+
+      3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
+              left-val-parsed (parse-int-if-possible left-val-raw)
+              right-val-parsed (parse-int-if-possible right-val-raw)
+              left-val (if (number? left-val-parsed)
+                         left-val-parsed
+                         (find-signal (keyword left-val-parsed) circuit))
+              right-val (if (number? right-val-parsed)
+                          right-val-parsed
+                          (find-signal (keyword right-val-parsed) circuit))]
+          (case opcode
+            "LSHIFT" (bit-shift-left left-val right-val)
+            "RSHIFT" (bit-shift-right left-val right-val)
+            "AND" (bit-and left-val right-val)
+            "OR" (bit-or left-val right-val))
+          ))))
 
 (def fast-find-signal (memoize find-signal))
