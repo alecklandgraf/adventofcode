@@ -210,6 +210,7 @@
     circuit-input)
   )
 
+
 (defn build-circuit
   "returns a map of input's data
   Usage: (build-circuit \"day-7-data.txt\")
@@ -217,18 +218,20 @@
   [circuit-input]
   (map-values (parse-circuit-data-into-map (str/split (slurp circuit-input) #"\n")) single-values-to-keywords))
 
-
+(defn parse-int [i]
+  (try
+    (Integer. i)
+    (catch Exception e i)))
 
 (defn find-signal
-  "returns the value of signal (keyword) within a circuit (map)"
+  "returns the value of signal (keyword) within a circuit (map)
+  Usage: (find-signal :i sample-built-circuit)"
   [signal circuit]
   (if (integer? (signal circuit))
     (signal circuit)
     (case (count (signal circuit))
-      2 ((let [value-as-string (last (signal circuit))
-               value (read-string (value-as-string))
-               is-value-number (number? value)]
-           (if is-value-number
-             (bit-not-unsigned value)
-             (find-signal (keyword value) circuit))))
+      2 ((let [value (parse-int (last (signal circuit)))]
+           (if (number? value)
+             (println "is a number")
+             (println "is not a number") )))
       3 (println "got three here"))))
