@@ -215,7 +215,8 @@
 
 (defn build-circuit
   "returns a map of input's data
-  Usage: (build-circuit \"day-7-data.txt\")"
+  Usage: (build-circuit \"day-7-data.txt\")
+  {:i [\"NOT\" \"y\"], :h [\"NOT\" \"x\"], :g [\"y\" \"RSHIFT\" \"2\"], :f [\"x\" \"LSHIFT\" \"2\"], :e [\"x\" \"OR\" \"y\"], :d [\"x\" \"AND\" \"y\"], :y :456, :x :123}"
   [circuit-input]
   (map-values (parse-circuit-data-into-map (str/split (slurp circuit-input) #"\n")) single-values-to-keywords))
 
