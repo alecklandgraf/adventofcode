@@ -178,9 +178,6 @@
   [n]
   (- 65535 n))
 
-
-
-
 (defn parse-output-wire [s]
   (last (map str/trim (str/split s #"->"))))
 
@@ -193,7 +190,7 @@
   [value]
   (if (> (count value) 1)
     value
-    (keyword (first value))))
+    (Integer. (first value))))
 
 (defn map-values
   "returns a map of the map (m) with the values mapped over the function (f)"
@@ -221,10 +218,17 @@
   (map-values (parse-circuit-data-into-map (str/split (slurp circuit-input) #"\n")) single-values-to-keywords))
 
 
+
 (defn find-signal
   "returns the value of signal (keyword) within a circuit (map)"
   [signal circuit]
-  (if (keyword? (signal circuit))
+  (if (integer? (signal circuit))
     (signal circuit)
-    (println "more work to do"))
-  )
+    (case (count (signal circuit))
+      2 ((let [value-as-string (last (signal circuit))
+               value (read-string (value-as-string))
+               is-value-number (number? value)]
+           (if is-value-number
+             (bit-not-unsigned value)
+             (find-signal (keyword value) circuit))))
+      3 (println "got three here"))))
