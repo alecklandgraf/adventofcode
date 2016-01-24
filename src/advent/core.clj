@@ -233,5 +233,6 @@
       2 ((let [value (parse-int (last (signal circuit)))]
            (if (number? value)
              (bit-not-unsigned value)
-             value )))
+             value
+            )))
       3 (println "got three here"))))
