@@ -171,6 +171,7 @@
 ; needed for the problem
 (require '[clojure.string :as str])
 (def day-7-input "/Users/alandgraf/code/advent/day7.txt")
+(def day-7-input-fixed "/Users/alandgraf/code/advent/day7-lx-hacked.txt")
 (def day-7-sample "/Users/alandgraf/code/advent/day7-sample-data.txt")
 
 (defn bit-not-unsigned
@@ -226,7 +227,37 @@
     (catch Exception e
       i)))
 
-(defn find-signal
+;"returns the value of signal (keyword) within a circuit (map)
+;Usage: (find-signal :i sample-built-circuit)"
+(def find-signal
+  (memoize (fn
+             [signal circuit]
+
+             (if (integer? (signal circuit))
+               (signal circuit)
+               (case (count (signal circuit))
+                 2 (let [value (parse-int-if-possible (last (signal circuit)))]
+                     (if (number? value)
+                       (bit-not-unsigned value)
+                       (bit-not-unsigned (find-signal (keyword value) circuit))))
+
+                 3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
+                         left-val-parsed (parse-int-if-possible left-val-raw)
+                         right-val-parsed (parse-int-if-possible right-val-raw)
+                         left-val (if (number? left-val-parsed)
+                                    left-val-parsed
+                                    (find-signal (keyword left-val-parsed) circuit))
+                         right-val (if (number? right-val-parsed)
+                                     right-val-parsed
+                                     (find-signal (keyword right-val-parsed) circuit))]
+                     (case opcode
+                       "LSHIFT" (bit-shift-left left-val right-val)
+                       "RSHIFT" (bit-shift-right left-val right-val)
+                       "AND" (bit-and left-val right-val)
+                       "OR" (bit-or left-val right-val))
+                     ))))))
+
+(defn find-signal-slowly
   "returns the value of signal (keyword) within a circuit (map)
   Usage: (find-signal :i sample-built-circuit)"
   [signal circuit]
@@ -234,19 +265,19 @@
     (signal circuit)
     (case (count (signal circuit))
       2 (let [value (parse-int-if-possible (last (signal circuit)))]
-           (if (number? value)
-             (bit-not-unsigned value)
-             (bit-not-unsigned (find-signal (keyword value) circuit))))
+          (if (number? value)
+            (bit-not-unsigned value)
+            (bit-not-unsigned (find-signal-slowly (keyword value) circuit))))
 
       3 (let [[left-val-raw opcode right-val-raw] (signal circuit)
               left-val-parsed (parse-int-if-possible left-val-raw)
               right-val-parsed (parse-int-if-possible right-val-raw)
               left-val (if (number? left-val-parsed)
                          left-val-parsed
-                         (find-signal (keyword left-val-parsed) circuit))
+                         (find-signal-slowly (keyword left-val-parsed) circuit))
               right-val (if (number? right-val-parsed)
                           right-val-parsed
-                          (find-signal (keyword right-val-parsed) circuit))]
+                          (find-signal-slowly (keyword right-val-parsed) circuit))]
           (case opcode
             "LSHIFT" (bit-shift-left left-val right-val)
             "RSHIFT" (bit-shift-right left-val right-val)
@@ -254,4 +285,7 @@
             "OR" (bit-or left-val right-val))
           ))))
 
-(def fast-find-signal (memoize find-signal))
+; Data prep: had to manually set lx in the data since it's the only one where lx isn't a number,
+; I was able to just update the line to: lw OR lv -> a
+
+; Timing: the memozied version copletes in 0.055178 msecs, the non-memoized version in ...
