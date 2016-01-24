@@ -257,7 +257,7 @@
   find-signal
   (memoize (fn
              [signal circuit]
-             (if (integer? (signal circuit))
+             (if (integer? (signal circuit))  ; N.B. could also switch on the type here
                (signal circuit)
                (if (string? (signal circuit))  ; either a string, "lx", or array, ["x" "LSHIFT" "y"] or ["NOT" "x"]
                  (find-signal (keyword (signal circuit)) circuit)
