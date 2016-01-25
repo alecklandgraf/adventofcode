@@ -268,3 +268,8 @@
 
 ; Data was loaded via: (def day-7-data (build-circuit day-7-input))
 ; For the solution to part B, I just ran (find-signal :a (assoc day-7-data :b (find-signal :a day-7-data)))
+
+
+; Day 19
+(def day-19-subs "/Users/alandgraf/code/advent/day19-substitutions.txt")
+(def day-19-molecule "/Users/alandgraf/code/advent/day19-molecule.txt")
