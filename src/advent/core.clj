@@ -273,3 +273,9 @@
 ; Day 19
 (def day-19-subs "/Users/alandgraf/code/advent/day19-substitutions.txt")
 (def day-19-molecule "/Users/alandgraf/code/advent/day19-molecule.txt")
+(use 'clojure.java.io)
+
+(defn print-file-contents [filename]
+  (with-open [rdr (reader filename)]
+    (doseq [line (line-seq rdr)]
+      (println line))) )
